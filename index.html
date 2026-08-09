@@ -68,34 +68,134 @@
             display: none;
         }
         .next-btn:hover { background-color: #1a5276; }
+
+        /* ── 統計列 ── */
+        .stat-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; font-size: 13px; }
+        .stat-item { padding: 4px 10px; border-radius: 12px; font-weight: bold; }
+        .stat-correct { background:#eafaf1; color:#1e8449; }
+        .stat-wrong   { background:#fdedec; color:#922b21; }
+        .stat-remain  { background:#eaf0fb; color:#2471a3; }
+        .stat-pool    { background:#fef9e7; color:#9a7d0a; }
+
+        /* ── 首頁 ── */
+        #home-box { display:none; }
+        .home-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        .home-info .row { display:flex; justify-content:space-between; align-items:center; }
+        .badge {
+            display:inline-block; padding:3px 10px; border-radius:12px;
+            font-weight:bold; font-size:13px;
+        }
+        .badge-blue   { background:#eaf0fb; color:#2471a3; }
+        .badge-red    { background:#fdedec; color:#922b21; }
+        .badge-green  { background:#eafaf1; color:#1e8449; }
+        .btn-row { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:12px; }
+        .btn-primary {
+            background-color: #2980b9; color: white; border: none;
+            padding: 12px 24px; font-size: 15px; border-radius: 6px;
+            cursor: pointer; flex:1; min-width:120px;
+        }
+        .btn-primary:hover { background-color: #1a5276; }
+        .btn-danger {
+            background-color: #c0392b; color: white; border: none;
+            padding: 12px 24px; font-size: 15px; border-radius: 6px;
+            cursor: pointer; flex:1; min-width:120px;
+        }
+        .btn-danger:hover { background-color: #922b21; }
+        .btn-secondary {
+            background-color: #7f8c8d; color: white; border: none;
+            padding: 10px 18px; font-size: 14px; border-radius: 6px;
+            cursor: pointer; flex:1; min-width:100px;
+        }
+        .btn-secondary:hover { background-color: #616a6b; }
+
+        /* ── 結果畫面 ── */
         .result-container { text-align: center; display: none; }
         .score { font-size: 52px; font-weight: bold; color: #2ecc71; margin: 20px 0; }
         .score.fail { color: #e74c3c; }
         .restart-btn {
             background-color: #e67e22; color: white; border: none;
             padding: 12px 32px; font-size: 16px; border-radius: 5px; cursor: pointer;
+            margin: 6px;
         }
         .restart-btn:hover { background-color: #d35400; }
-        #loading-msg { text-align: center; color: #666; padding: 40px 0; font-size: 16px; }
-        .stat-bar {
-            display: flex; gap: 6px; margin-bottom: 18px; font-size: 13px;
+        .home-btn {
+            background-color: #7f8c8d; color: white; border: none;
+            padding: 12px 32px; font-size: 16px; border-radius: 5px; cursor: pointer;
+            margin: 6px;
         }
-        .stat-item { padding: 4px 10px; border-radius: 12px; font-weight: bold; }
-        .stat-correct { background:#eafaf1; color:#1e8449; }
-        .stat-wrong   { background:#fdedec; color:#922b21; }
-        .stat-remain  { background:#eaf0fb; color:#2471a3; }
+        .home-btn:hover { background-color: #616a6b; }
+
+        /* ── 匯出匯入 Modal ── */
+        .modal-overlay {
+            display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;
+        }
+        .modal-overlay.show { display:flex; }
+        .modal-box {
+            background:white; border-radius:10px; padding:24px;
+            width:90%; max-width:480px; box-shadow:0 8px 32px rgba(0,0,0,0.2);
+        }
+        .modal-box h3 { margin-top:0; }
+        .modal-box textarea {
+            width:100%; height:120px; font-family:monospace; font-size:12px;
+            border:1px solid #bdc3c7; border-radius:5px; padding:8px;
+            box-sizing:border-box; resize:vertical;
+        }
+        .modal-actions { display:flex; gap:8px; margin-top:12px; justify-content:flex-end; }
+        .modal-actions button {
+            padding:8px 18px; border-radius:5px; border:none; cursor:pointer; font-size:14px;
+        }
+        .btn-confirm { background:#2980b9; color:white; }
+        .btn-confirm:hover { background:#1a5276; }
+        .btn-cancel  { background:#ecf0f1; color:#333; }
+        .btn-cancel:hover  { background:#bdc3c7; }
+        .modal-note { font-size:12px; color:#888; margin-top:8px; }
+
+        #loading-msg { text-align: center; color: #666; padding: 40px 0; font-size: 16px; }
     </style>
 </head>
 <body>
 <div class="quiz-container">
     <div id="loading-msg">⏳ 題庫載入中，請稍候…</div>
 
+    <!-- ══ 首頁 ══ -->
+    <div id="home-box">
+        <h2>🚗 汽車駕照模擬測驗</h2>
+        <div class="home-info">
+            <div class="row">
+                <span>📚 題庫進度</span>
+                <span id="home-pool-text" class="badge badge-blue"></span>
+            </div>
+            <div class="row" style="margin-top:6px;">
+                <span>📕 錯題本</span>
+                <span id="home-wrong-text" class="badge badge-red"></span>
+            </div>
+        </div>
+        <div class="btn-row">
+            <button class="btn-primary" onclick="startNormalQuiz()">▶ 新模擬考（50 題）</button>
+            <button class="btn-danger"  onclick="startWrongQuiz()">📕 挑戰錯題本</button>
+        </div>
+        <div class="btn-row">
+            <button class="btn-secondary" onclick="showExportModal()">📤 匯出進度</button>
+            <button class="btn-secondary" onclick="showImportModal()">📥 匯入進度</button>
+            <button class="btn-secondary" onclick="confirmReset()">🔄 重置題庫</button>
+        </div>
+    </div>
+
+    <!-- ══ 測驗區 ══ -->
     <div id="quiz-box" style="display:none;">
-        <h2>🚗 汽車駕照模擬測驗（50 題）</h2>
+        <h2 id="quiz-title">🚗 模擬考</h2>
         <div class="stat-bar">
             <span class="stat-item stat-correct" id="stat-correct">✅ 答對：0</span>
             <span class="stat-item stat-wrong"   id="stat-wrong">❌ 答錯：0</span>
-            <span class="stat-item stat-remain"  id="stat-remain">📝 剩餘：50</span>
+            <span class="stat-item stat-remain"  id="stat-remain">📝 剩餘：0</span>
         </div>
         <div class="progress" id="progress-text"></div>
         <div class="question" id="question-text"></div>
@@ -104,109 +204,255 @@
         <button class="next-btn" id="next-btn" onclick="nextQuestion()">下一題 ▶</button>
     </div>
 
+    <!-- ══ 結果畫面 ══ -->
     <div id="result-box" class="result-container">
-        <h2>測驗結束！</h2>
+        <h2 id="result-title">測驗結束！</h2>
         <div class="progress" id="final-progress"></div>
         <div class="score" id="score-text">0 分</div>
         <p id="summary-text"></p>
-        <button class="restart-btn" onclick="startQuiz()">重新挑戰</button>
+        <p id="wrong-removed-text" style="color:#1e8449; font-size:14px;"></p>
+        <div>
+            <button class="restart-btn" id="restart-btn" onclick="startNormalQuiz()">再考一輪</button>
+            <button class="home-btn" onclick="showHome()">🏠 返回首頁</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ 匯出 Modal ══ -->
+<div class="modal-overlay" id="export-modal">
+    <div class="modal-box">
+        <h3>📤 匯出進度</h3>
+        <p style="font-size:14px;">複製下方字串，傳給自己（LINE、記事本皆可）。匯入時貼上即可還原進度。</p>
+        <textarea id="export-text" readonly onclick="this.select()"></textarea>
+        <p class="modal-note">點擊文字框即可全選，再按 Ctrl+C（或長按）複製。</p>
+        <div class="modal-actions">
+            <button class="btn-confirm" onclick="copyExportText()">📋 複製</button>
+            <button class="btn-cancel"  onclick="closeModal('export-modal')">關閉</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ 匯入 Modal ══ -->
+<div class="modal-overlay" id="import-modal">
+    <div class="modal-box">
+        <h3>📥 匯入進度</h3>
+        <p style="font-size:14px;">將先前匯出的字串貼入下方，按「匯入」即可還原進度。</p>
+        <textarea id="import-text" placeholder="請貼上匯出的進度字串…"></textarea>
+        <p class="modal-note" style="color:#c0392b;">⚠️ 匯入後將覆蓋現有進度，請確認後再執行。</p>
+        <div class="modal-actions">
+            <button class="btn-confirm" onclick="doImport()">匯入</button>
+            <button class="btn-cancel"  onclick="closeModal('import-modal')">取消</button>
+        </div>
     </div>
 </div>
 
 <script>
+/* ════════════════════════════════════════
+   狀態變數
+════════════════════════════════════════ */
 let allQuestions = [];
 let quizQuestions = [];
 let currentIndex = 0;
 let correctCount = 0;
 let wrongCount = 0;
+let isWrongMode = false;
+let wrongRemovedCount = 0; // 本輪從錯題本中消除的題數
 
+/* ── LocalStorage 鍵名 ── */
+const LS_USED  = 'driveQuiz_usedIds';
+const LS_WRONG = 'driveQuiz_wrongAnswers';
+
+/* ── 讀寫 helpers ── */
+function getUsedIds()      { return JSON.parse(localStorage.getItem(LS_USED)  || '[]'); }
+function saveUsedIds(ids)  { localStorage.setItem(LS_USED,  JSON.stringify(ids)); }
+function getWrongAnswers() { return JSON.parse(localStorage.getItem(LS_WRONG) || '[]'); }
+function saveWrongAnswers(wa) { localStorage.setItem(LS_WRONG, JSON.stringify(wa)); }
+
+/* ════════════════════════════════════════
+   載入題庫
+════════════════════════════════════════ */
 fetch('questions.json')
     .then(r => r.json())
     .then(data => {
         allQuestions = data;
         document.getElementById('loading-msg').style.display = 'none';
-        startQuiz();
+        showHome();
     })
     .catch(err => {
         document.getElementById('loading-msg').innerText =
             '❌ 題庫載入失敗，請確認 questions.json 與本檔案在同一資料夾。\n' + err;
     });
 
-function startQuiz() {
-    currentIndex = 0; correctCount = 0; wrongCount = 0;
-    // Fisher-Yates 洗牌後取前 50 題
-    let arr = [...allQuestions];
-    for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    quizQuestions = arr.slice(0, 50);
+/* ════════════════════════════════════════
+   首頁
+════════════════════════════════════════ */
+function showHome() {
+    const usedIds     = getUsedIds();
+    const wrongAns    = getWrongAnswers();
+    const totalQ      = allQuestions.length;
+    const remaining   = totalQ - usedIds.length;
 
-    document.getElementById('quiz-box').style.display = 'block';
+    document.getElementById('home-pool-text').textContent =
+        `已考 ${usedIds.length} / ${totalQ} 題，剩餘 ${remaining} 題`;
+    document.getElementById('home-wrong-text').textContent =
+        `${wrongAns.length} 題待複習`;
+
+    document.getElementById('home-box').style.display    = 'block';
+    document.getElementById('quiz-box').style.display    = 'none';
+    document.getElementById('result-box').style.display  = 'none';
+}
+
+/* ════════════════════════════════════════
+   Fisher-Yates 洗牌
+════════════════════════════════════════ */
+function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+/* ════════════════════════════════════════
+   開始模擬考（不重複抽題）
+════════════════════════════════════════ */
+function startNormalQuiz() {
+    isWrongMode = false;
+    let usedIds   = getUsedIds();
+    let remaining = allQuestions.filter(q => !usedIds.includes(q.id));
+
+    if (remaining.length === 0) {
+        const ok = confirm(
+            '🎉 恭喜！您已將全部 ' + allQuestions.length + ' 題考完一輪！\n\n' +
+            '按「確定」重置題庫，從頭開始新的一輪；按「取消」返回首頁。'
+        );
+        if (!ok) { showHome(); return; }
+        usedIds = [];
+        saveUsedIds([]);
+        remaining = [...allQuestions];
+    }
+
+    const selected = shuffle(remaining).slice(0, 50);
+
+    /* 將本次選出的題目加入「已用」清單 */
+    const newUsedIds = [...usedIds, ...selected.map(q => q.id)];
+    saveUsedIds(newUsedIds);
+
+    launchQuiz(selected);
+}
+
+/* ════════════════════════════════════════
+   挑戰錯題本
+════════════════════════════════════════ */
+function startWrongQuiz() {
+    const wrongAns = getWrongAnswers();
+    if (wrongAns.length === 0) {
+        alert('🎉 錯題本是空的！目前沒有需要複習的題目，繼續加油！');
+        return;
+    }
+    isWrongMode = true;
+    wrongRemovedCount = 0;
+    const questions = wrongAns.map(wa => wa.question);
+    launchQuiz(questions);
+}
+
+/* ════════════════════════════════════════
+   共用啟動邏輯
+════════════════════════════════════════ */
+function launchQuiz(questions) {
+    quizQuestions = questions;
+    currentIndex  = 0;
+    correctCount  = 0;
+    wrongCount    = 0;
+
+    const total = quizQuestions.length;
+    document.getElementById('quiz-title').textContent =
+        isWrongMode
+            ? `📕 錯題本複習（共 ${total} 題）`
+            : `🚗 模擬考（共 ${total} 題）`;
+
+    document.getElementById('home-box').style.display   = 'none';
+    document.getElementById('quiz-box').style.display   = 'block';
     document.getElementById('result-box').style.display = 'none';
+
     updateStats();
     showQuestion();
 }
 
-function updateStats() {
-    const remain = 50 - currentIndex;
-    document.getElementById('stat-correct').textContent = `✅ 答對：${correctCount}`;
-    document.getElementById('stat-wrong').textContent   = `❌ 答錯：${wrongCount}`;
-    document.getElementById('stat-remain').textContent  = `📝 剩餘：${remain}`;
-}
-
+/* ════════════════════════════════════════
+   顯示題目
+════════════════════════════════════════ */
 function showQuestion() {
-    const q = quizQuestions[currentIndex];
-    document.getElementById('progress-text').innerText =
-        `第 ${currentIndex + 1} 題 / 共 50 題（題號 ${q.id}）`;
+    const q     = quizQuestions[currentIndex];
+    const total = quizQuestions.length;
 
-    // 分割題幹與選項
+    document.getElementById('progress-text').innerText =
+        `第 ${currentIndex + 1} 題 / 共 ${total} 題（題號 ${q.id}）`;
+
+    /* 分割題幹與選項（支援全形 （n） 與半形 (n)） */
     const parts = q.q.split(/(?=(?:（\d）|\(\d\)))/);
-    const main = parts[0].trim();
-    document.getElementById('question-text').innerText = main;
+    document.getElementById('question-text').innerText = parts[0].trim();
 
     const box = document.getElementById('options-box');
     box.innerHTML = '';
     for (let i = 1; i <= 3; i++) {
         let text = `(${i})`;
-        // 支援全形 （n） 和半形 (n) 兩種格式
         parts.forEach(p => {
-            const stripped = p.trim();
-            if (stripped.startsWith(`（${i}）`) || stripped.startsWith(`(${i})`)) {
-                text = stripped;
-            }
+            const s = p.trim();
+            if (s.startsWith(`（${i}）`) || s.startsWith(`(${i})`)) text = s;
         });
         const btn = document.createElement('button');
-        btn.className = 'option-btn';
-        btn.innerText = text;
+        btn.className    = 'option-btn';
+        btn.innerText    = text;
         btn.dataset.choice = i;
-        btn.onclick = () => checkAnswer(i);
+        btn.onclick      = () => checkAnswer(i);
         box.appendChild(btn);
     }
 
     const fb = document.getElementById('feedback');
-    fb.className = 'feedback'; fb.innerText = '';
+    fb.className = 'feedback';
+    fb.innerText = '';
     document.getElementById('next-btn').style.display = 'none';
 }
 
+/* ════════════════════════════════════════
+   判斷答案
+════════════════════════════════════════ */
 function checkAnswer(choice) {
-    const q = quizQuestions[currentIndex];
-    const correct = choice === q.ans;
-    if (correct) correctCount++; else wrongCount++;
+    const q       = quizQuestions[currentIndex];
+    const correct = (choice === q.ans);
 
+    if (correct) {
+        correctCount++;
+        /* 若在錯題本模式且答對 → 從錯題本中移除 */
+        if (isWrongMode) {
+            let wrongAns = getWrongAnswers();
+            wrongAns = wrongAns.filter(wa => wa.question.id !== q.id);
+            saveWrongAnswers(wrongAns);
+            wrongRemovedCount++;
+        }
+    } else {
+        wrongCount++;
+        /* 答錯立即寫入錯題本 */
+        recordWrongAnswer(q, choice);
+    }
+
+    /* 標色所有選項 */
     document.querySelectorAll('.option-btn').forEach(btn => {
         btn.disabled = true;
         const c = parseInt(btn.dataset.choice);
-        if (c === q.ans) btn.classList.add('correct');
+        if (c === q.ans)                   btn.classList.add('correct');
         else if (c === choice && !correct) btn.classList.add('wrong');
     });
 
-    const fb = document.getElementById('feedback');
+    /* 回饋訊息 */
+    const fb    = document.getElementById('feedback');
+    const parts = q.q.split(/(?=(?:（\d）|\(\d\)))/);
     if (correct) {
         fb.className = 'feedback correct-fb show';
         fb.innerText = '✅ 答對了！';
     } else {
-        const parts = q.q.split(/(?=(?:（\d）|\(\d\)))/);
         let correctText = `(${q.ans})`;
         parts.forEach(p => {
             const s = p.trim();
@@ -220,29 +466,159 @@ function checkAnswer(choice) {
     document.getElementById('next-btn').style.display = 'inline-block';
 }
 
+/* ════════════════════════════════════════
+   答錯立即記錄
+════════════════════════════════════════ */
+function recordWrongAnswer(question, myAnswer) {
+    let wrongAns = getWrongAnswers();
+    /* 若同題已在錯題本，更新 myAnswer；否則新增 */
+    const idx = wrongAns.findIndex(wa => wa.question.id === question.id);
+    if (idx >= 0) {
+        wrongAns[idx].myAnswer = myAnswer;
+    } else {
+        wrongAns.push({ question, myAnswer });
+    }
+    saveWrongAnswers(wrongAns);
+}
+
+/* ════════════════════════════════════════
+   下一題 / 結束
+════════════════════════════════════════ */
 function nextQuestion() {
     currentIndex++;
-    if (currentIndex < 50) {
+    if (currentIndex < quizQuestions.length) {
         showQuestion();
     } else {
         endQuiz();
     }
 }
 
-function endQuiz() {
-    document.getElementById('quiz-box').style.display = 'none';
-    document.getElementById('result-box').style.display = 'block';
-    const score = correctCount * 2;
-    const el = document.getElementById('score-text');
-    el.innerText = `${score} 分`;
-    el.className = score >= 85 ? 'score' : 'score fail';
-    document.getElementById('final-progress').innerText =
-        `答對 ${correctCount} 題 / 錯 ${wrongCount} 題 / 共 50 題`;
-    document.getElementById('summary-text').innerText =
-        score >= 85
-            ? '🎉 太棒了！已達及格標準（85分），繼續保持！'
-            : '⚠️ 及格分數為 85 分，建議重新練習加油！';
+function updateStats() {
+    const remain = quizQuestions.length - currentIndex;
+    document.getElementById('stat-correct').textContent = `✅ 答對：${correctCount}`;
+    document.getElementById('stat-wrong').textContent   = `❌ 答錯：${wrongCount}`;
+    document.getElementById('stat-remain').textContent  = `📝 剩餘：${remain}`;
 }
+
+/* ════════════════════════════════════════
+   結束畫面
+════════════════════════════════════════ */
+function endQuiz() {
+    document.getElementById('quiz-box').style.display   = 'none';
+    document.getElementById('result-box').style.display = 'block';
+
+    const total = quizQuestions.length;
+
+    if (isWrongMode) {
+        /* 錯題本模式 */
+        document.getElementById('result-title').textContent = '錯題本複習完畢！';
+        document.getElementById('score-text').textContent   = `${correctCount} / ${total}`;
+        document.getElementById('score-text').className     = 'score';
+        document.getElementById('final-progress').textContent =
+            `答對 ${correctCount} 題 / 答錯 ${wrongCount} 題 / 共 ${total} 題`;
+        document.getElementById('summary-text').textContent =
+            wrongRemovedCount > 0
+                ? `🎉 本輪從錯題本消除了 ${wrongRemovedCount} 題，繼續努力！`
+                : '繼續練習，直到全部消除為止！';
+        document.getElementById('wrong-removed-text').textContent =
+            `目前錯題本剩餘：${getWrongAnswers().length} 題`;
+        document.getElementById('restart-btn').textContent = '再練一次錯題本';
+        document.getElementById('restart-btn').onclick     = startWrongQuiz;
+    } else {
+        /* 模擬考模式 */
+        const score    = correctCount * 2;
+        const passed   = score >= 85;
+        document.getElementById('result-title').textContent = '測驗結束！';
+        document.getElementById('score-text').textContent   = `${score} 分`;
+        document.getElementById('score-text').className     = passed ? 'score' : 'score fail';
+        document.getElementById('final-progress').textContent =
+            `答對 ${correctCount} 題 / 答錯 ${wrongCount} 題 / 共 ${total} 題`;
+        document.getElementById('summary-text').textContent =
+            passed
+                ? '🎉 太棒了！已達及格標準（85分），繼續保持！'
+                : '⚠️ 及格分數為 85 分，建議重新練習加油！';
+        document.getElementById('wrong-removed-text').textContent =
+            wrongCount > 0 ? `📕 本輪已記錄 ${wrongCount} 題到錯題本` : '✅ 本輪全部答對，無新增錯題！';
+        document.getElementById('restart-btn').textContent = '再考一輪';
+        document.getElementById('restart-btn').onclick     = startNormalQuiz;
+    }
+}
+
+/* ════════════════════════════════════════
+   重置題庫
+════════════════════════════════════════ */
+function confirmReset() {
+    if (confirm('確定要重置題庫進度嗎？\n（已考紀錄將清空，錯題本不受影響）')) {
+        saveUsedIds([]);
+        showHome();
+        alert('✅ 題庫進度已重置！');
+    }
+}
+
+/* ════════════════════════════════════════
+   匯出進度
+════════════════════════════════════════ */
+function showExportModal() {
+    const data = {
+        usedIds:     getUsedIds(),
+        wrongAnswers: getWrongAnswers(),
+        exportedAt:  new Date().toISOString()
+    };
+    const str = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+    document.getElementById('export-text').value = str;
+    document.getElementById('export-modal').classList.add('show');
+}
+
+function copyExportText() {
+    const ta = document.getElementById('export-text');
+    ta.select();
+    try {
+        document.execCommand('copy');
+        alert('✅ 已複製到剪貼板！');
+    } catch(e) {
+        alert('請手動選取文字後複製。');
+    }
+}
+
+/* ════════════════════════════════════════
+   匯入進度
+════════════════════════════════════════ */
+function showImportModal() {
+    document.getElementById('import-text').value = '';
+    document.getElementById('import-modal').classList.add('show');
+}
+
+function doImport() {
+    const raw = document.getElementById('import-text').value.trim();
+    if (!raw) { alert('請先貼上匯出字串。'); return; }
+    try {
+        const json = decodeURIComponent(escape(atob(raw)));
+        const data = JSON.parse(json);
+        if (!Array.isArray(data.usedIds) || !Array.isArray(data.wrongAnswers)) {
+            throw new Error('資料格式錯誤');
+        }
+        saveUsedIds(data.usedIds);
+        saveWrongAnswers(data.wrongAnswers);
+        closeModal('import-modal');
+        showHome();
+        alert(`✅ 匯入成功！\n已考題目：${data.usedIds.length} 題\n錯題本：${data.wrongAnswers.length} 題`);
+    } catch(e) {
+        alert('❌ 匯入失敗：字串格式不正確，請確認是否為完整的匯出字串。');
+    }
+}
+
+/* ════════════════════════════════════════
+   Modal 工具
+════════════════════════════════════════ */
+function closeModal(id) {
+    document.getElementById(id).classList.remove('show');
+}
+/* 點擊 overlay 背景關閉 */
+document.querySelectorAll('.modal-overlay').forEach(el => {
+    el.addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('show');
+    });
+});
 </script>
 </body>
 </html>
