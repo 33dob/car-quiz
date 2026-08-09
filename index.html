@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>汽車駕照模擬測驗 - 50題題庫</title>
+    <title>汽車駕照模擬測驗</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -18,30 +18,19 @@
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            max-width: 600px;
+            max-width: 640px;
             width: 100%;
         }
-        h2 {
-            color: #333;
-            margin-top: 0;
-        }
-        .progress {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 20px;
-        }
+        h2 { color: #333; margin-top: 0; }
+        .progress { font-size: 14px; color: #666; margin-bottom: 20px; }
         .question {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: bold;
             color: #2c3e50;
             margin-bottom: 20px;
-            line-height: 1.5;
+            line-height: 1.6;
         }
-        .options {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
+        .options { display: flex; flex-direction: column; gap: 10px; }
         .option-btn {
             background-color: #ecf0f1;
             border: 2px solid #bdc3c7;
@@ -49,51 +38,72 @@
             border-radius: 5px;
             cursor: pointer;
             text-align: left;
-            font-size: 16px;
+            font-size: 15px;
+            line-height: 1.5;
             transition: all 0.2s ease;
         }
-        .option-btn:hover {
-            background-color: #3498db;
-            color: white;
-            border-color: #2980b9;
-        }
-        .result-container {
-            text-align: center;
+        .option-btn:hover:not(:disabled) { background-color: #3498db; color: white; border-color: #2980b9; }
+        .option-btn.correct { background-color: #2ecc71; color: white; border-color: #27ae60; }
+        .option-btn.wrong   { background-color: #e74c3c; color: white; border-color: #c0392b; }
+        .option-btn:disabled { cursor: default; }
+        .feedback {
+            margin-top: 15px;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 15px;
             display: none;
         }
-        .score {
-            font-size: 48px;
-            font-weight: bold;
-            color: #2ecc71;
-            margin: 20px 0;
-        }
-        .restart-btn {
-            background-color: #e67e22;
+        .feedback.show { display: block; }
+        .feedback.correct-fb { background: #eafaf1; color: #1e8449; border: 1px solid #2ecc71; }
+        .feedback.wrong-fb  { background: #fdedec; color: #922b21; border: 1px solid #e74c3c; }
+        .next-btn {
+            margin-top: 15px;
+            background-color: #2980b9;
             color: white;
             border: none;
-            padding: 12px 30px;
-            font-size: 16px;
+            padding: 10px 28px;
+            font-size: 15px;
             border-radius: 5px;
             cursor: pointer;
+            display: none;
         }
-        .restart-btn:hover {
-            background-color: #d35400;
+        .next-btn:hover { background-color: #1a5276; }
+        .result-container { text-align: center; display: none; }
+        .score { font-size: 52px; font-weight: bold; color: #2ecc71; margin: 20px 0; }
+        .score.fail { color: #e74c3c; }
+        .restart-btn {
+            background-color: #e67e22; color: white; border: none;
+            padding: 12px 32px; font-size: 16px; border-radius: 5px; cursor: pointer;
         }
+        .restart-btn:hover { background-color: #d35400; }
+        #loading-msg { text-align: center; color: #666; padding: 40px 0; font-size: 16px; }
+        .stat-bar {
+            display: flex; gap: 6px; margin-bottom: 18px; font-size: 13px;
+        }
+        .stat-item { padding: 4px 10px; border-radius: 12px; font-weight: bold; }
+        .stat-correct { background:#eafaf1; color:#1e8449; }
+        .stat-wrong   { background:#fdedec; color:#922b21; }
+        .stat-remain  { background:#eaf0fb; color:#2471a3; }
     </style>
 </head>
 <body>
-
 <div class="quiz-container">
-    <!-- 測驗進行中的畫面 -->
-    <div id="quiz-box">
-        <div class="progress" id="progress-text">題目載入中...</div>
-        <div class="question" id="question-text"></div>
-        <div class="options" id="options-box">
-            <!-- 按鈕會由 JavaScript 動態生成 -->
+    <div id="loading-msg">⏳ 題庫載入中，請稍候…</div>
+
+    <div id="quiz-box" style="display:none;">
+        <h2>🚗 汽車駕照模擬測驗（50 題）</h2>
+        <div class="stat-bar">
+            <span class="stat-item stat-correct" id="stat-correct">✅ 答對：0</span>
+            <span class="stat-item stat-wrong"   id="stat-wrong">❌ 答錯：0</span>
+            <span class="stat-item stat-remain"  id="stat-remain">📝 剩餘：50</span>
         </div>
+        <div class="progress" id="progress-text"></div>
+        <div class="question" id="question-text"></div>
+        <div class="options" id="options-box"></div>
+        <div class="feedback" id="feedback"></div>
+        <button class="next-btn" id="next-btn" onclick="nextQuestion()">下一題 ▶</button>
     </div>
 
-    <!-- 測驗結束的結果畫面 -->
     <div id="result-box" class="result-container">
         <h2>測驗結束！</h2>
         <div class="progress" id="final-progress"></div>
@@ -104,154 +114,135 @@
 </div>
 
 <script>
-// 完整題庫資料來源（已載入您提供的完整 JSON）
-const allQuestions = [
-    {"id": 1, "ans": 2, "q": "禁止任何車輛進入。(2)禁止四輪以上汽車及機車進入。(3)禁止行人通行。"},
-    {"id": 2, "ans": 1, "q": "禁止超車。(2)禁止會車。(3)禁止汽車進入。"},
-    {"id": 3, "ans": 1, "q": "第 3 題：公路交通安全規則與防禦駕駛觀念專題。以下何者為安全駕駛首要原則？(1)隨時注意車前狀況並保持安全距離。(2)超速行駛以節省時間。(3)緊跟前車行駛。"},
-    {"id": 4, "ans": 3, "q": "當開車進入「國道施工路段」時，下列哪一項駕駛行為最能有效預防事故發生？(1)在施工縮減車道處加速超車。(2)開啟駕駛輔助系統後便放心地看手機。(3)提早變換至未施工車道，並保持隨時準備煞車的安全距離與專注力。"},
-    {"id": 5, "ans": 1, "q": "駕駛配備有 Level 2 等級先進駕駛輔助系統(ADAS)的新車行駛於國道。關於在駕駛過程中的行為與認知，下列哪一項最符合安全規範並能有效預防事故？(1)認知到目前的系統對「靜止工程車」辨識有限制，行經施工路段時應主動介入駕駛，而非依賴系統。(2)系統會自動跟車與修正方向盤，可以趁機滑手機或閉目養神。(3)因為系統能辨識車道線，所以行駛於大雨或大霧路段時，交給電腦操作比人工駕駛更安全。"},
-    {"id": 6, "ans": 2, "q": "下列關於「變換車道」的行為，何者錯誤？(1)變換車道時，應讓直行車先行，並注意安全距離。(2)在雙白實線上可雙邊變換車道。(3)顯示方向燈、轉頭察看照後鏡、檢查視野死角並注意有無障礙或車輛行人。"},
-    {"id": 11, "ans": 2, "q": "汽車駕駛人行駛於高速公路、快速公路，以變換燈光、連續密集按鳴喇叭迫使前車讓道，下列何者正確？(1)提醒前車讓路並無違規。(2)處新臺幣3,000元以上；6,000元以下罰鍰。(3)只要未發生事故不處罰。"},
-    {"id": 15, "ans": 3, "q": "曾因酒駕經吊銷駕駛執照，於重新考照後，必須加裝何種設備於車上始得行駛？(1)行車紀錄器。(2)車用滅火器。(3)車輛點火自動鎖定裝置(酒精鎖)。"},
-    {"id": 17, "ans": 3, "q": "關於酒駕之規定，下列何者正確？(1)酒測值標準是吐氣所含酒精濃度達每公升0.25毫克或血液中酒精濃度達0.10%以上。(2)12年內再犯酒駕，處新臺幣120,000元罰鍰。(3)酒駕拒測處新臺幣180,000元罰鍰，並當場移置保管該汽機車、吊銷其駕駛執照。"},
-    {"id": 22, "ans": 3, "q": "根據現行規定，若駕駛人遭遇警察攔檢並明確表示「拒絕接受酒精濃度測試」，其初次違規的處罰為何？(1)視酒精濃度決定罰鍰金額高低，當場移置保管該汽機車及吊扣其駕駛執照。(2)處新臺幣9萬元罰鍰，當場移置保管該汽機車及吊銷其駕駛執照。(3)處新臺幣18萬元罰鍰，當場移置保管該汽機車及吊銷其駕駛執照，接受道路交通安全講習。"},
-    {"id": 26, "ans": 2, "q": "關於汽機車駕駛人「酒測值超標」時，針對「同車乘客」之連坐處分，下列何種情況「免予處罰」？(1)乘客聲稱並不知道駕駛人有飲酒者。(2)乘客為未滿18歲、或年滿70歲者。(3)乘客與駕駛人並無親屬關係者。"},
-    {"id": 45, "ans": 3, "q": "汽車行駛下長坡時，正確的駕駛方式為何？(1)儘量使用腳煞車控制速度。(2)完全不使用任何煞車，讓車輛自然滑行。(3)善用低速檔引擎煞車，避免過度使用腳煞車。"},
-    {"id": 56, "ans": 2, "q": "汽車駕駛人行駛道路下列何者為對？(1)遇有急事要聯絡，可以使用行動電話。(2)以手持方式使用行動電話、電腦或其他相類功能裝置進行撥接、通話、數據通訊或其他有礙駕駛安全之行為，均為禁止之行為。(3)只要不妨礙他人安寧都可以使用撥接通話。"},
-    {"id": 71, "ans": 3, "q": "汽車駕駛人，行車速度超過規定之最高時速40公里以上者，處罰鍰新臺幣：(1)1,200~2,400元。(2)2,400~6,000元。(3)6,000~36,000元。"},
-    {"id": 84, "ans": 3, "q": "酒後開車，對駕駛人會產生「視覺之隧道效應」，駕駛者猶如在隧道中行車，前有亮光但四周漆黑，故酒後駕車：(1)視野不變。(2)視野變廣。(3)視野變窄。"},
-    {"id": 142, "ans": 3, "q": "汽車駕駛人行經鐵路平交道時，若車輛在鐵軌上突然熄火且無法發動，此時警鈴已響、遮斷器開始降下。根據事故預防與緊急處置程序，下列哪一項應變作為最正確？(1)立即打電話給保險公司或拖吊車。(2)因為還沒看到火車，應該留在車內不斷嘗試重新發動引擎。(3)應立即按下平交道旁的「緊急鈕」，並設法將車輛推離軌道；若火車已近，應迅速離開車輛往兩側空曠處逃生。"},
-    {"id": 158, "ans": 3, "q": "自中華民國115年2月28日起新登檢領照之自用小客車有黏貼隔熱紙者，前擋風玻璃可見光透過率應為：(1)50%以上。(2)60%以上。(3)70%以上。"},
-    {"id": 277, "ans": 3, "q": "汽車行駛至槽化線區域時，正確的行為為何？(1)可停車上下客。(2)可臨時停車但不得久停。(3)不得進入或跨越。"},
-    {"id": 310, "ans": 1, "q": "駕駛人駕車行經設有行人穿越道之路口，發現有行人正準備穿越時，下列處置何者正確？(1)應在行人穿越道前停讓行人優先通行，待行人安全通過後再起步。(2)預判行人通過速度後加速通過。(3)鳴按喇叭警示行人退讓。"}
-];
+let allQuestions = [];
+let quizQuestions = [];
+let currentIndex = 0;
+let correctCount = 0;
+let wrongCount = 0;
 
-// 為了補足你需要的 50 題，下面動態生成重複描述但 ID 不同的基礎題（這也是法規專題的題目）
-for(let i=1; i<=350; i++) {
-    if(!allQuestions.some(item => item.id === i)) {
-        // 模擬題目中規律出現的 (id % 3 + 1) 作為答案規律
-        let mockAns = (i % 3) + 1; 
-        allQuestions.push({
-            "id": i,
-            "ans": mockAns,
-            "q": `第 ${i} 題：公路交通安全規則與防禦駕駛觀念專題。以下何者為安全駕駛首要原則？(1)隨時注意車前狀況並保持安全距離。(2)超速行駛以節省時間。(3)緊跟前車行駛。`
-        });
-    }
-}
+fetch('questions.json')
+    .then(r => r.json())
+    .then(data => {
+        allQuestions = data;
+        document.getElementById('loading-msg').style.display = 'none';
+        startQuiz();
+    })
+    .catch(err => {
+        document.getElementById('loading-msg').innerText =
+            '❌ 題庫載入失敗，請確認 questions.json 與本檔案在同一資料夾。\n' + err;
+    });
 
-// 變數宣告
-let currentQuizQuestions = []; // 本次測驗要使用的 50 題
-let currentIndex = 0;          // 當前題目的索引指標（關鍵：用來跳下一題）
-let correctCount = 0;          // 答對題數
-
-// 核心功能：開始新測驗
 function startQuiz() {
-    currentIndex = 0;
-    correctCount = 0;
-    
-    // 1. 將全部題庫進行隨機洗牌 (Fisher-Yates Shuffle)
-    let shuffled = [...allQuestions];
-    for (let i = shuffled.length - 1; i > 0; i--) {
+    currentIndex = 0; correctCount = 0; wrongCount = 0;
+    // Fisher-Yates 洗牌後取前 50 題
+    let arr = [...allQuestions];
+    for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        [arr[i], arr[j]] = [arr[j], arr[i]];
     }
-    
-    // 2. 嚴格抽選前 50 題作為本次測驗題目
-    currentQuizQuestions = shuffled.slice(0, 50);
-    
-    // 3. 切換顯示區塊並渲染第一題
+    quizQuestions = arr.slice(0, 50);
+
     document.getElementById('quiz-box').style.display = 'block';
     document.getElementById('result-box').style.display = 'none';
-    
+    updateStats();
     showQuestion();
 }
 
-// 渲染當前題目與選項
+function updateStats() {
+    const remain = 50 - currentIndex;
+    document.getElementById('stat-correct').textContent = `✅ 答對：${correctCount}`;
+    document.getElementById('stat-wrong').textContent   = `❌ 答錯：${wrongCount}`;
+    document.getElementById('stat-remain').textContent  = `📝 剩餘：${remain}`;
+}
+
 function showQuestion() {
-    const progressText = document.getElementById('progress-text');
-    const questionText = document.getElementById('question-text');
-    const optionsBox = document.getElementById('options-box');
-    
-    // 取得當前的題目物件
-    let currentQ = currentQuizQuestions[currentIndex];
-    
-    // 更新上方進度條
-    progressText.innerText = `目前進度：第 ${currentIndex + 1} 題 / 共 50 題 (題號 ID: ${currentQ.id})`;
-    
-    // 解析題目本文與選項（將題目中的 (1) (2) (3) 切開）
-    let rawStr = currentQ.q;
-    let parts = rawStr.split(/(?=\(\d\))/);
-    
-    // 第一部分是題目敘述
-    let mainQuestion = parts[0].trim();
-    questionText.innerText = mainQuestion;
-    
-    // 清空舊的按鈕
-    optionsBox.innerHTML = '';
-    
-    // 動態生成三個選項按鈕
+    const q = quizQuestions[currentIndex];
+    document.getElementById('progress-text').innerText =
+        `第 ${currentIndex + 1} 題 / 共 50 題（題號 ${q.id}）`;
+
+    // 分割題幹與選項
+    const parts = q.q.split(/(?=(?:（\d）|\(\d\)))/);
+    const main = parts[0].trim();
+    document.getElementById('question-text').innerText = main;
+
+    const box = document.getElementById('options-box');
+    box.innerHTML = '';
     for (let i = 1; i <= 3; i++) {
-        let optionText = `選項 (${i})`;
-        // 尋找符合 (i) 格式的文字
+        let text = `(${i})`;
+        // 支援全形 （n） 和半形 (n) 兩種格式
         parts.forEach(p => {
-            if(p.trim().startsWith(`(${i})`)) {
-                optionText = p.trim();
+            const stripped = p.trim();
+            if (stripped.startsWith(`（${i}）`) || stripped.startsWith(`(${i})`)) {
+                text = stripped;
             }
         });
-        
-        let btn = document.createElement('button');
+        const btn = document.createElement('button');
         btn.className = 'option-btn';
-        btn.innerText = optionText;
-        // 點擊後觸發檢查答案，並帶入使用者選的號碼
+        btn.innerText = text;
+        btn.dataset.choice = i;
         btn.onclick = () => checkAnswer(i);
-        optionsBox.appendChild(btn);
+        box.appendChild(btn);
     }
+
+    const fb = document.getElementById('feedback');
+    fb.className = 'feedback'; fb.innerText = '';
+    document.getElementById('next-btn').style.display = 'none';
 }
 
-// 檢查答案並跳到下一題
-function checkAnswer(userChoice) {
-    let currentQ = currentQuizQuestions[currentIndex];
-    
-    // 如果答對了，增加正確計數
-    if (userChoice === currentQ.ans) {
-        correctCount++;
-    }
-    
-    // 【關鍵修改】重要：將索引指標加 1，前進到下一題
-    currentIndex++;
-    
-    // 檢查是否已經做滿 50 題
-    if (currentIndex < 50) {
-        showQuestion(); // 還有題目，渲染下一題
+function checkAnswer(choice) {
+    const q = quizQuestions[currentIndex];
+    const correct = choice === q.ans;
+    if (correct) correctCount++; else wrongCount++;
+
+    document.querySelectorAll('.option-btn').forEach(btn => {
+        btn.disabled = true;
+        const c = parseInt(btn.dataset.choice);
+        if (c === q.ans) btn.classList.add('correct');
+        else if (c === choice && !correct) btn.classList.add('wrong');
+    });
+
+    const fb = document.getElementById('feedback');
+    if (correct) {
+        fb.className = 'feedback correct-fb show';
+        fb.innerText = '✅ 答對了！';
     } else {
-        endQuiz(); // 滿 50 題，結算分數
+        const parts = q.q.split(/(?=(?:（\d）|\(\d\)))/);
+        let correctText = `(${q.ans})`;
+        parts.forEach(p => {
+            const s = p.trim();
+            if (s.startsWith(`（${q.ans}）`) || s.startsWith(`(${q.ans})`)) correctText = s;
+        });
+        fb.className = 'feedback wrong-fb show';
+        fb.innerText = `❌ 答錯了！正確答案是 ${correctText}`;
+    }
+
+    updateStats();
+    document.getElementById('next-btn').style.display = 'inline-block';
+}
+
+function nextQuestion() {
+    currentIndex++;
+    if (currentIndex < 50) {
+        showQuestion();
+    } else {
+        endQuiz();
     }
 }
 
-// 結束測驗，顯示總分
 function endQuiz() {
     document.getElementById('quiz-box').style.display = 'none';
     document.getElementById('result-box').style.display = 'block';
-    
-    // 每題 2 分，計算總分
-    let finalScore = correctCount * 2;
-    
-    document.getElementById('final-progress').innerText = `您一共答對了 ${correctCount} 題 / 共 50 題`;
-    document.getElementById('score-text').innerText = `${finalScore} 分`;
-    
-    let summary = "";
-    if (finalScore >= 85) {
-        summary = "🎉 太棒了！您已經達到及格標準（85分以上），請繼續保持！";
-    } else {
-        summary = "⚠️ 差一點點！及格分數為 85 分，建議重新測驗多加練習喔！";
-    }
-    document.getElementById('summary-text').innerText = summary;
+    const score = correctCount * 2;
+    const el = document.getElementById('score-text');
+    el.innerText = `${score} 分`;
+    el.className = score >= 85 ? 'score' : 'score fail';
+    document.getElementById('final-progress').innerText =
+        `答對 ${correctCount} 題 / 錯 ${wrongCount} 題 / 共 50 題`;
+    document.getElementById('summary-text').innerText =
+        score >= 85
+            ? '🎉 太棒了！已達及格標準（85分），繼續保持！'
+            : '⚠️ 及格分數為 85 分，建議重新練習加油！';
 }
-
-// 網頁載入完成後自動開始測驗
-window.onload = startQuiz;
 </script>
-
 </body>
 </html>
