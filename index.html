@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>最新汽車筆試線上模擬考系統 (支援跨裝置匯入出)</title>
+    <title>115年汽車筆試線上模擬考系統 (完整1090題版)</title>
     <style>
         :root {
             --primary-color: #3498db;
@@ -85,6 +85,7 @@
             border-radius: 6px;
             cursor: pointer;
             font-size: 15px;
+            width: 100%;
         }
         .option-btn:hover { background: #e2e8f0; }
         .option-btn.selected { background: #dbeafe; border-color: #3b82f6; }
@@ -100,9 +101,8 @@
         .wrong-ans { color: var(--danger-color); font-weight: bold; }
         
         .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        /* 跨裝置同步區塊樣式 */
+        .loading-text { text-align: center; font-size: 18px; color: #7f8c8d; padding: 20px; }
+        
         .sync-section {
             background: #fdf6e2;
             border: 1px solid #f39c12;
@@ -118,47 +118,53 @@
 <div class="container">
     <h1>🚗 汽車筆試模擬考與錯題複習系統</h1>
     
-    <div class="stats-box">
-        <div>題庫總數：<span id="total-pool">0</span> 題</div>
-        <div>剩餘未考：<span id="remaining-pool">0</span> 題</div>
-        <div>錯題本紀錄：<span id="wrong-count">0</span> 題</div>
-    </div>
+    <!-- 讀取狀態提示 -->
+    <div id="loading-status" class="loading-text">正在載入 1090 題庫系統，請稍候...</div>
 
-    <!-- 跨裝置同步工具區 -->
-    <div class="sync-section">
-        <strong>📱 跨裝置進度同步工具 (方案 A)</strong><br>
-        <span style="font-size: 13px; color: #7f8c8d;">想換手機/電腦作答？點擊匯出複製進度，並在另一台裝置貼上匯入即可！</span>
-        <div style="margin-top: 10px; display: flex; justify-content: center; gap: 10px;">
-            <button class="btn-sync" style="padding: 6px 15px; font-size: 14px;" onclick="exportProgress()">📤 匯出目前進度</button>
-            <button class="btn-sync" style="padding: 6px 15px; font-size: 14px; background-color: #34495e;" onclick="importProgress()">📥 匯入外部進度</button>
+    <div id="main-content" style="display: none;">
+        <div class="stats-box">
+            <div>題庫總數：<span id="total-pool">0</span> 題</div>
+            <div>剩餘未考：<span id="remaining-pool">0</span> 題</div>
+            <div>錯題本紀錄：<span id="wrong-count">0</span> 題</div>
         </div>
-    </div>
 
-    <div class="btn-container">
-        <button class="btn-primary" id="start-exam-btn" onclick="startNewExam()">開始新模擬考 (50題)</button>
-        <button class="btn-danger" id="review-wrong-btn" onclick="startWrongReview()">挑戰錯題本</button>
-        <button style="background: #7f8c8d; color: white;" onclick="resetPool()">重置整個題庫進度</button>
-    </div>
-
-    <!-- 測驗區域 -->
-    <div id="quiz-area" class="quiz-area tab-content">
-        <h2 id="quiz-title">模擬考試中</h2>
-        <div id="progress-text" style="text-align: center; margin-bottom: 10px;"></div>
-        <div id="question-container"></div>
-        <div style="text-align: center; margin-top: 20px;">
-            <button class="btn-success" id="submit-btn" onclick="submitExam()">提交答案</button>
+        <!-- 跨裝置同步工具區 -->
+        <div class="sync-section">
+            <strong>📱 跨裝置進度同步工具 (方案 A)</strong><br>
+            <span style="font-size: 13px; color: #7f8c8d;">想換手機/電腦作答？點擊匯出複製進度，並在另一台裝置貼上匯入即可！</span>
+            <div style="margin-top: 10px; display: flex; justify-content: center; gap: 10px;">
+                <button class="btn-sync" style="padding: 6px 15px; font-size: 14px;" onclick="exportProgress()">📤 匯出目前進度</button>
+                <button class="btn-sync" style="padding: 6px 15px; font-size: 14px; background-color: #34495e;" onclick="importProgress()">📥 匯入外部進度</button>
+            </div>
         </div>
-    </div>
 
-    <!-- 結果與錯題本區域 -->
-    <div id="result-area" class="tab-content">
-        <h2 id="result-title">本次測驗結果</h2>
-        <div id="result-summary" style="font-size: 18px; font-weight: bold; text-align: center; margin-bottom: 20px;"></div>
-        <div id="result-list"></div>
+        <div class="btn-container">
+            <button class="btn-primary" id="start-exam-btn" onclick="startNewExam()">開始新模擬考 (50題)</button>
+            <button class="btn-danger" id="review-wrong-btn" onclick="startWrongReview()">挑戰錯題本</button>
+            <button style="background: #7f8c8d; color: white;" onclick="resetPool()">重置整個題庫進度</button>
+        </div>
+
+        <!-- 測驗區域 -->
+        <div id="quiz-area" class="quiz-area tab-content">
+            <h2 id="quiz-title">模擬考試中</h2>
+            <div id="progress-text" style="text-align: center; margin-bottom: 10px;"></div>
+            <div id="question-container"></div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn-success" id="submit-btn" onclick="submitExam()">提交答案</button>
+            </div>
+        </div>
+
+        <!-- 結果與錯題本區域 -->
+        <div id="result-area" class="tab-content">
+            <h2 id="result-title">本次測驗結果</h2>
+            <div id="result-summary" style="font-size: 18px; font-weight: bold; text-align: center; margin-bottom: 20px;"></div>
+            <div id="result-list"></div>
+        </div>
     </div>
 </div>
 
 <script>
+// 全域狀態管理
 let fullQuestionBank = [];
 let pool = [];
 let wrongBank = [];
@@ -166,29 +172,29 @@ let currentExamQuestions = [];
 let userAnswers = {};
 let isReviewMode = false;
 
-// 初始化：透過 fetch 讀取 1090 題 JSON 檔
+// 初始化：透過 fetch 非同步讀取同目錄下的 questions.json 檔
 async function initApp() {
     try {
         const response = await fetch('questions.json');
+        if (!response.ok) throw new Error('無法讀取題庫檔案');
+        
         fullQuestionBank = await response.json();
         
-        // 讀取 LocalStorage 進度，若無進度則預設為完整題庫
+        // 讀取 LocalStorage 進度，若無歷史進度則複製一份完整的題庫
         pool = JSON.parse(localStorage.getItem('car_quiz_pool')) || [...fullQuestionBank];
         wrongBank = JSON.parse(localStorage.getItem('car_quiz_wrong')) || [];
         
+        // 隱藏加載畫面，顯示主程式介面
+        document.getElementById('loading-status').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+        
         updateUIInfo();
     } catch (error) {
-        alert("無法讀取 questions.json 題庫檔，請確認檔案路徑是否正確！");
+        console.error(error);
+        document.getElementById('loading-status').innerHTML = 
+            `<span style="color:var(--danger-color); font-weight:bold;">⚠️ 載入失敗！</span><br>請確認 <strong>questions.json</strong> 是否與網頁放在同一個資料夾下。<br><small>(註：若在本機雙擊開啟 HTML 檔案，因瀏覽器安全限制會無法讀取 JSON，請上傳至 GitHub Pages 測試即可正常運作。)</small>`;
     }
 }
-
-// 網頁載入後執行初始化
-window.onload = initApp;// 核心狀態管理
-let pool = JSON.parse(localStorage.getItem('car_quiz_pool')) || [...fullQuestionBank];
-let wrongBank = JSON.parse(localStorage.getItem('car_quiz_wrong')) || [];
-let currentExamQuestions = [];
-let userAnswers = {};
-let isReviewMode = false;
 
 function updateUIInfo() {
     document.getElementById('total-pool').innerText = fullQuestionBank.length;
@@ -209,15 +215,12 @@ function exportProgress() {
         poolIds: pool.map(q => q.id),
         wrongIds: wrongBank.map(q => q.id)
     };
-    // 將資料轉為 Base64 字串方便複製傳送
     const dataString = btoa(encodeURIComponent(JSON.stringify(progressData)));
     
-    // 自動複製到剪貼簿
     navigator.clipboard.writeText(dataString).then(() => {
         alert("📋 進度已成功複製到剪貼簿！\n請直接將它貼上並透過 LINE/Email 傳送到您的手機或其它裝置。");
     }).catch(err => {
-        // 防呆：如果瀏覽器不支援自動複製，用 prompt 彈出讓使用者手動全選複製
-        prompt("請複製下方框內的進度代碼：", dataString);
+        prompt("自動複製失敗，請手動複製下方框內的進度代碼：", dataString);
     });
 }
 
@@ -230,14 +233,11 @@ function importProgress() {
         const decodedData = JSON.parse(decodeURIComponent(atob(dataString.trim())));
         
         if (decodedData.poolIds && decodedData.wrongIds) {
-            // 還原剩餘題庫
             pool = fullQuestionBank.filter(q => decodedData.poolIds.includes(q.id));
-            // 還原錯題本
             wrongBank = fullQuestionBank.filter(q => decodedData.wrongIds.includes(q.id));
             
             saveState();
             alert("✨ 進度匯入成功！系統已同步您在另一台裝置的作答進度與錯題本。");
-            // 隱藏可能殘留的測驗畫面，重新整理資訊
             document.getElementById('quiz-area').style.display = 'none';
             document.getElementById('result-area').style.display = 'none';
         } else {
@@ -257,9 +257,11 @@ function startNewExam() {
         saveState();
     }
 
+    // 隨機洗牌並抽取最多 50 題
     const shuffled = [...pool].sort(() => 0.5 - Math.random());
     currentExamQuestions = shuffled.slice(0, 50);
     
+    // 從剩餘未考題庫中排除這 50 題，確保不重複出題
     pool = pool.filter(q => !currentExamQuestions.some(cq => cq.id === q.id));
     saveState();
 
@@ -290,6 +292,7 @@ function renderQuiz() {
         const card = document.createElement('div');
         card.className = 'question-card';
         
+        // 透過正則表達式解析括號選項 (1) (2) (3)
         const opt1 = qObj.q.match(/\(1\)(.*?)(?=\(2\)|\(3\)|$)/);
         const opt2 = qObj.q.match(/\(2\)(.*?)(?=\(3\)|\(1\)|$)/);
         const opt3 = qObj.q.match(/\(3\)(.*?)(?=\(1\)|\(2\)|$)/);
@@ -298,15 +301,15 @@ function renderQuiz() {
         card.innerHTML = `
             <div><strong>第 ${index + 1} 題. ${questionText}</strong></div>
             <div class="options">
-                <button class="option-btn" onclick="selectOption(${qObj.id}, 1, this)">① ${opt1 ? opt1[1] : '選項 1'}</button>
-                <button class="option-btn" onclick="selectOption(${qObj.id}, 2, this)">② ${opt2 ? opt2[1] : '選項 2'}</button>
-                <button class="option-btn" onclick="selectOption(${qObj.id}, 3, this)">③ ${opt3 ? opt3[1] : '選項 3'}</button>
+                <button class="option-btn" onclick="selectOption(${qObj.id}, 1, this)">① ${opt1 ? opt1[1].trim() : '選項 1'}</button>
+                <button class="option-btn" onclick="selectOption(${qObj.id}, 2, this)">② ${opt2 ? opt2[1].trim() : '選項 2'}</button>
+                <button class="option-btn" onclick="selectOption(${qObj.id}, 3, this)">③ ${opt3 ? opt3[1].trim() : '選項 3'}</button>
             </div>
         `;
         container.appendChild(card);
     });
     
-    window.scrollTo({ top: document.getElementById('quiz-area').offsetTop, behavior: 'smooth' });
+    window.scrollTo({ top: document.getElementById('quiz-area').offsetTop - 20, behavior: 'smooth' });
 }
 
 function selectOption(qId, optionNum, btnEl) {
@@ -329,9 +332,11 @@ function submitExam() {
         if (isCorrect) {
             scoreCount++;
             if (isReviewMode) {
+                // 若在錯題挑戰中答對，將其從錯題本移出
                 wrongBank = wrongBank.filter(w => w.id !== qObj.id);
             }
         } else {
+            // 答錯則加入錯題本
             if (!wrongBank.some(w => w.id === qObj.id)) {
                 wrongBank.push(qObj);
             }
@@ -349,16 +354,17 @@ function submitExam() {
 
     saveState();
 
-    const scoreText = `本次得分：${Math.round((scoreCount / currentExamQuestions.length) * 100)} 分 (答對 ${scoreCount} 題 / 共 ${currentExamQuestions.length} 題)`;
+    const score = Math.round((scoreCount / currentExamQuestions.length) * 100);
+    const scoreText = `本次得分：${score} 分 (答對 ${scoreCount} 題 / 共 ${currentExamQuestions.length} 題)`;
     document.getElementById('result-summary').innerText = scoreText;
     
     if (currentExamQuestions.length === scoreCount) {
-        document.getElementById('result-list').innerHTML = '<div style="color:var(--success-color); font-weight:bold; text-align:center;">✨ 太棒了！本次測驗全對，沒有任何錯題！</div>';
+        document.getElementById('result-list').innerHTML = '<div style="color:var(--success-color); font-weight:bold; text-align:center; padding:20px;">✨ 太棒了！本次測驗全對，沒有任何錯題！</div>';
     }
 
     document.getElementById('quiz-area').style.display = 'none';
     document.getElementById('result-area').style.display = 'block';
-    window.scrollTo({ top: document.getElementById('result-area').offsetTop, behavior: 'smooth' });
+    window.scrollTo({ top: document.getElementById('result-area').offsetTop - 20, behavior: 'smooth' });
 }
 
 // 全面重置整個題庫進度
@@ -373,8 +379,8 @@ function resetPool() {
     }
 }
 
-// 網頁初始化
-updateUIInfo();
+// 網頁載入後自動執行初始化讀取
+window.onload = initApp;
 </script>
 
 </body>
